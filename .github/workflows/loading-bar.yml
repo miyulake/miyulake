@@ -1,0 +1,64 @@
+name: Update README Loading Bar
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update loading bar
+        run: |
+          python << 'EOF'
+          import re
+          import random
+
+          BAR_LENGTH = 20
+
+          with open("README.md", "r") as f:
+              content = f.read()
+
+          match = re.search(
+              r"<!-- LOADING_BAR_START -->(.*?)<!-- LOADING_BAR_END -->",
+              content,
+              re.S
+          )
+
+          if not match:
+              print("No loading bar found")
+              exit(0)
+
+          current = match.group(1)
+          percent_match = re.search(r"(\d+)%", current)
+          percent = int(percent_match.group(1)) if percent_match else 0
+
+          percent = min(percent + random.randint(1,5), 100)
+
+          filled = int(BAR_LENGTH * percent / 100)
+          bar = "█" * filled + "░" * (BAR_LENGTH - filled)
+
+          replacement = f"\n[{bar}] {percent}%\n"
+
+          new_content = re.sub(
+              r"<!-- LOADING_BAR_START -->(.*?)<!-- LOADING_BAR_END -->",
+              f"<!-- LOADING_BAR_START -->{replacement}<!-- LOADING_BAR_END -->",
+              content,
+              flags=re.S
+          )
+
+          with open("README.md", "w") as f:
+              f.write(new_content)
+          EOF
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add README.md
+          git commit -m "Update loading bar" || echo "No changes to commit"
+          git push
