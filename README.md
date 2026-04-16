@@ -1,4 +1,4 @@
 *<h3>Year progress:</h3>*
 <!-- LOADING_BAR_START -->
-[█████░░░░░░░░░░░░░░░] 28%
+[█████░░░░░░░░░░░░░░░] 29%
 <!-- LOADING_BAR_END -->
